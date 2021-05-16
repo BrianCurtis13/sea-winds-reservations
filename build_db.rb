@@ -1,4 +1,5 @@
 require 'sequel'
+require 'csv'
 require 'pry'
 
 # connect to an in-memory database
@@ -10,19 +11,20 @@ DB.create_table :reservations do
   Date :date_in
   Date :date_out
   String :made_by
-  foreign_key :guest_id, :guest
+  foreign_key :member_id, :member
 end
 
-DB.create_table :guest do
+DB.create_table :member do
   primary_key :id
   String :first_name
   String :last_name
   Date :member_since
+  TrueClass :member
 end
 
 DB.create_table :hosted_at do
   primary_key :id
-  foreign_key :guest_id, :guest
+  foreign_key :member_id, :member
   foreign_key :occupied_room_id, :occupied_room
 end
 
@@ -54,36 +56,83 @@ DB.create_table :room do
   String :name
   String :status
   TrueClass :pets
+  TrueClass :accessible
   foreign_key :room_type_id, :room_type
+  foreign_key :property_id, :property
+end
+
+DB.create_table :property do
+  primary_key :id
+  String :name
+  String :description
+  foreign_key :owner_id, :member
+  Integer :address_id
+end
+
+DB.create_table :property_shares do
+  primary_key :id
+  foreign_key :member_id, :member
+  foreign_key :property_id, :property
+  Integer :shares
+end
+
+DB.create_table :address do
+  primary_key :id
+  foreign_key :property_id, :property
+  String :address_line_1
+  String :address_line_2
+  String :city
+  String :state
+  String :postal_code
+  String :country
 end
 
 # create a dataset from the room table
-rooms = DB[:room]
 room_types = DB[:room_type]
-guests = DB[:guest]
+members = DB[:member]
+properties = DB[:property]
+shares = DB[:property_shares]
+rooms = DB[:room]
+
 
 # populate the tables
 room_types.insert(id: 1, description: 'Single', max_capacity: 1)
 room_types.insert(id: 2, description: 'Double', max_capacity: 2)
 room_types.insert(id: 3, description: 'Twins', max_capacity: 2)
 room_types.insert(id: 4, description: 'Double/Single', max_capacity: 3)
+room_types.insert(id: 5, description: 'Bunks etc.', max_capacity: 4)
 
-rooms.insert(name: '3/4 Bedroom', number: '1', status: 'Available', pets: false, room_type_id: 1)
-rooms.insert(name: 'Front Bedroom 1', number: '2', status: 'Available', pets: false, room_type_id: 2)
-rooms.insert(name: 'Front Bedroom 2', number: '3', status: 'Unavailable', pets: false, room_type_id: 2)
-rooms.insert(name: 'Front Ell Bedroom', number: '4', status: 'Available', pets: false, room_type_id: 3)
-rooms.insert(name: 'Back Ell Bedroom', number: '5', status: 'Available', pets: false, room_type_id: 2)
-rooms.insert(name: 'Third Floor King', number: '6', status: 'Available', pets: false, room_type_id: 2)
-rooms.insert(name: 'Doris O\'Neal Room', number: '7', status: 'Available', pets: false, room_type_id: 1)
-rooms.insert(name: 'Third Floor Twins', number: '8', status: 'Available', pets: false, room_type_id: 3)
-rooms.insert(name: 'Cabin', number: '9', status: 'Available', pets: true, room_type_id: 4)
-rooms.insert(name: 'Barn 1', number: '10', status: 'Unavailable', pets: true, room_type_id: 3)
-rooms.insert(name: 'Barn 2', number: '11', status: 'Unavailable', pets: true, room_type_id: 1)
-rooms.insert(name: 'Barn 3', number: '12', status: 'Unavailable', pets: true, room_type_id: 2)
+# Initialize spreadsheet input
+member_input = CSV.read('./files/swtdb_import - members.csv', headers: true)
+properties_input = CSV.read('./files/swtdb_import - properties.csv', headers: true)
+property_shares_input = CSV.read('./files/swtdb_import - property_shares.csv', headers: true)
 
-guests.insert(first_name: 'Myron', last_name: 'Curtis', member_since: '1939-01-01')
-guests.insert(first_name: 'Brian', last_name: 'Curtis', member_since: '1979-10-13')
-guests.insert(first_name: 'Marion', last_name: 'Swall', member_since: '1979-05-22')
+address_input = CSV.read('./files/swtdb_import - addresses.csv', headers: true)
+rooms_input = CSV.read('./files/swtdb_import - rooms.csv', headers: true)
+
+# Insert data from spreadsheets
+
+puts "Loading members ..."
+member_input.each do |line|
+  members.insert(first_name: line["first_name"], last_name: line["last_name"], member_since: line["member_since"], member: line["member"])
+end
+
+puts "Loading properties ..."
+properties_input.each do |line|
+  properties.insert(line.to_h)
+end
+
+puts "Loading property shares ..."
+property_shares_input.each do |line|
+  shares.insert(line.to_h)
+end
+
+puts "Loading rooms ..."
+rooms_input.each do |line|
+  rooms.insert(line.to_h)
+end
+
+
 
 
 
