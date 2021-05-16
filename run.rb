@@ -1,4 +1,5 @@
 require_relative './lib/db_builder.rb'
+require_relative './lib/display_and_output.rb'
 require 'sequel'
 require 'csv'
 require 'pry'
@@ -26,7 +27,7 @@ def location(line)
   "#{line[:city]} #{line[:state]}"
 end
 
-DB = Sequel.sqlite
+DB = Sequel.sqlite('sea_winds.db')
 swdb = SeaWindsDB.new(DB)
 
 room_types = swdb.room_types
@@ -87,6 +88,8 @@ view = rooms.join_table(:inner, :room_type, id: :room_type_id)
             .join_table(:inner, :property, id: Sequel[:room][:property_id])
             .join_table(:inner, :member, id: Sequel[:property][:owner_contact_id])
             .join_table(:inner, :address, id: Sequel[:property][:address_id])
+
+view_report_data = view.map {|line| view_report(line)}
 
 binding.pry; puts ''
 
