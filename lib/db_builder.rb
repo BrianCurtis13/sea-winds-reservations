@@ -46,14 +46,14 @@ class SeaWindsDB
 
     @database.create_table? :room_type do
       primary_key :id
-      String :description
+      String :room_description
       Integer :max_capacity
     end
 
     @database.create_table? :room do
       primary_key :id
       String :number
-      String :name
+      String :room_name
       String :status
       TrueClass :pets
       TrueClass :accessible
@@ -63,9 +63,9 @@ class SeaWindsDB
 
     @database.create_table? :property do
       primary_key :id
-      String :name
+      String :prop_name
       String :description
-      foreign_key :owner_id, :member
+      foreign_key :owner_contact_id, :member
       Integer :address_id
     end
 
@@ -107,5 +107,9 @@ class SeaWindsDB
 
   def rooms
     @database[:room]
+  end
+
+  def addresses
+    @database[:address]
   end
 end
