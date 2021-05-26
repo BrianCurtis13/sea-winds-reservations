@@ -1,4 +1,6 @@
 class SeaWindsDB
+  attr_accessor :database
+  
   def initialize(database)
     @database = database
     build_tables

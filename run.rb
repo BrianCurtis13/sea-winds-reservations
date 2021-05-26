@@ -27,7 +27,7 @@ def location(line)
   "#{line[:city]} #{line[:state]}"
 end
 
-DB = Sequel.sqlite('sea_winds.db')
+DB = Sequel.sqlite('./files/sea_winds.db')
 swdb = SeaWindsDB.new(DB)
 
 room_types = swdb.room_types
@@ -37,15 +37,19 @@ shares = swdb.shares
 rooms = swdb.rooms
 addresses = swdb.addresses
 
+# binding.pry
 
 # populate the tables
-room_types.insert(id: 1, room_description: 'Single', max_capacity: 1)
-room_types.insert(id: 2, room_description: 'Double', max_capacity: 2)
-room_types.insert(id: 3, room_description: 'Twins', max_capacity: 2)
-room_types.insert(id: 4, room_description: 'Double/Single', max_capacity: 3)
-room_types.insert(id: 5, room_description: 'Bunks etc.', max_capacity: 4)
+# room_types.delete
+# room_types.insert(id: 1, room_description: 'Single', max_capacity: 1)
+# room_types.insert(id: 2, room_description: 'Double', max_capacity: 2)
+# room_types.insert(id: 3, room_description: 'Twins', max_capacity: 2)
+# room_types.insert(id: 4, room_description: 'Double/Single', max_capacity: 3)
+# room_types.insert(id: 5, room_description: 'Bunks etc.', max_capacity: 4)
 
 # Initialize spreadsheet input
+room_types_input = CSV.read('./files/room_types.csv', headers: true)
+
 member_input = CSV.read('./files/swtdb_import - members.csv', headers: true)
 properties_input = CSV.read('./files/swtdb_import - properties.csv', headers: true)
 property_shares_input = CSV.read('./files/swtdb_import - property_shares.csv', headers: true)
@@ -54,6 +58,11 @@ address_input = CSV.read('./files/swtdb_import - addresses.csv', headers: true)
 rooms_input = CSV.read('./files/swtdb_import - rooms.csv', headers: true)
 
 # Insert data from spreadsheets
+
+puts "Loading room types ..."
+room_types_input.each do |line|
+  room_types.insert(line.to_h)
+end
 
 puts "Loading members ..."
 member_input.each do |line|
@@ -89,7 +98,12 @@ view = rooms.join_table(:inner, :room_type, id: :room_type_id)
             .join_table(:inner, :member, id: Sequel[:property][:owner_contact_id])
             .join_table(:inner, :address, id: Sequel[:property][:address_id])
 
+swdb.database.create_view(:rooms_report, view)
+
+
 view_report_data = view.map {|line| view_report(line)}
 
 binding.pry; puts ''
+
+puts "Finished building Sea Winds database!"
 
