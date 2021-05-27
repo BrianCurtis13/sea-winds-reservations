@@ -1,6 +1,6 @@
 class SeaWindsDB
   attr_accessor :database
-  
+
   def initialize(database)
     @database = database
     build_tables
@@ -40,8 +40,9 @@ class SeaWindsDB
 
     @database.create_table? :reserved_room do
       primary_key :id
-      Integer :number_of_rooms
-      foreign_key :room_type_id, :room_type
+      # Integer :number_of_rooms
+      # foreign_key :room_type_id, :room_type
+      foreign_key :room_id, :room
       foreign_key :reservation_id, :reservations
       String :status
     end

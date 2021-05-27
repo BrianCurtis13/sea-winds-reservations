@@ -1,4 +1,6 @@
-require_relative './lib/db_builder.rb'
+# Builds a new Sea Winds database from csv source files.
+
+require_relative './lib/sea_winds_db.rb'
 require_relative './lib/display_and_output.rb'
 require 'sequel'
 require 'csv'
@@ -27,6 +29,13 @@ def location(line)
   "#{line[:city]} #{line[:state]}"
 end
 
+db_filepath = './files/sea_winds.db'
+
+if File.exist? db_filepath
+  puts "Sea Winds database found at #{db_filepath}. Delete and retry if you want to rebuild from csv files."
+  abort
+end
+
 DB = Sequel.sqlite('./files/sea_winds.db')
 swdb = SeaWindsDB.new(DB)
 
@@ -37,15 +46,7 @@ shares = swdb.shares
 rooms = swdb.rooms
 addresses = swdb.addresses
 
-# binding.pry
-
 # populate the tables
-# room_types.delete
-# room_types.insert(id: 1, room_description: 'Single', max_capacity: 1)
-# room_types.insert(id: 2, room_description: 'Double', max_capacity: 2)
-# room_types.insert(id: 3, room_description: 'Twins', max_capacity: 2)
-# room_types.insert(id: 4, room_description: 'Double/Single', max_capacity: 3)
-# room_types.insert(id: 5, room_description: 'Bunks etc.', max_capacity: 4)
 
 # Initialize spreadsheet input
 room_types_input = CSV.read('./files/room_types.csv', headers: true)
@@ -103,7 +104,7 @@ swdb.database.create_view(:rooms_report, view)
 
 view_report_data = view.map {|line| view_report(line)}
 
-binding.pry; puts ''
+# binding.pry; puts ''
 
 puts "Finished building Sea Winds database!"
 

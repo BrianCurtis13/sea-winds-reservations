@@ -48,3 +48,11 @@ def count_report_header(resource, header_name = nil)
   puts "#{header_name}, Count"
   puts "----------------------"
 end
+
+def display_onscreen_list(resource, id_field, name_fields)
+  resource.each do |line|
+    name_array = name_fields.map {|field| line[field]}
+    name = name_array.join(" ")
+    puts "#{line[:id]}: #{name}"
+  end
+end
