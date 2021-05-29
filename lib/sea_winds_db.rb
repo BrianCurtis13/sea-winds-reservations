@@ -115,4 +115,12 @@ class SeaWindsDB
   def addresses
     @database[:address]
   end
+
+  def reserved_rooms
+    @database[:reserved_room]
+  end
+
+  def reservations
+    @database[:reservations]
+  end
 end

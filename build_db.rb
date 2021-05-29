@@ -45,6 +45,7 @@ properties = swdb.properties
 shares = swdb.shares
 rooms = swdb.rooms
 addresses = swdb.addresses
+reserved_rooms = swdb.reserved_rooms
 
 # populate the tables
 
@@ -101,6 +102,11 @@ view = rooms.join_table(:inner, :room_type, id: :room_type_id)
 
 swdb.database.create_view(:rooms_report, view)
 
+reservations_view = reserved_rooms.join_table(:inner, :reservations, id: :reservation_id)
+                                  .join_table(:inner, :member, id: :member_id)
+                                  .join_table(:inner, :room, id: Sequel[:reserved_room][:room_id])
+
+swdb.database.create_view(:reservations_report, reservations_view)
 
 view_report_data = view.map {|line| view_report(line)}
 

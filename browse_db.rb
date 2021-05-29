@@ -40,6 +40,8 @@ until @property != nil
   end
 end
 
+
+
 binding.pry
 
 puts "Under construction ..."

@@ -1,3 +1,5 @@
+
+
 def create_reservation(database, date_in, date_out, made_by, member_id)
   database[:reservations].insert(
     [:date_in, :date_out, :made_by, :member_id],
