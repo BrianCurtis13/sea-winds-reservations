@@ -1,6 +1,7 @@
 # Builds a new Sea Winds database from csv source files.
 
 require_relative './lib/sea_winds_db.rb'
+require_relative './lib/reservations.rb'
 require_relative './lib/display_and_output.rb'
 require 'sequel'
 require 'csv'
@@ -95,6 +96,8 @@ end
 puts "Property count: #{properties.count}"
 puts "Room count: #{rooms.count}"
 
+db = swdb.database
+
 view = rooms.join_table(:inner, :room_type, id: :room_type_id)
             .join_table(:inner, :property, id: Sequel[:room][:property_id])
             .join_table(:inner, :member, id: Sequel[:property][:owner_contact_id])
@@ -105,6 +108,7 @@ swdb.database.create_view(:rooms_report, view)
 reservations_view = reserved_rooms.join_table(:inner, :reservations, id: :reservation_id)
                                   .join_table(:inner, :member, id: :member_id)
                                   .join_table(:inner, :room, id: Sequel[:reserved_room][:room_id])
+                                  .join_table(:inner, :property, id: Sequel[:room][:property_id])
 
 swdb.database.create_view(:reservations_report, reservations_view)
 
@@ -113,4 +117,4 @@ view_report_data = view.map {|line| view_report(line)}
 # binding.pry; puts ''
 
 puts "Finished building Sea Winds database!"
-
+puts "Done!"

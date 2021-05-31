@@ -13,3 +13,8 @@ def reserve_room(database, room_id, reservation_id, status = 'active')
     [room_id, reservation_id, status]
   )
 end
+
+def cancel_room(database, room_id, reservation_id)
+  reserved_room = database[:reserved_room].where(room_id: room_id, reservation_id: reservation_id)
+  reserved_room.update(status: 'cancelled')
+end
